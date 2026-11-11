@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crossword Sprint</title>
+  <style>
+    :root{--paper:#f5f3ee;--ink:#202725;--muted:#787f7b;--line:#deded7;--green:#236c55;--green2:#e3eee8;--red:#d66b5c}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+    .page{max-width:1120px;margin:auto;padding:30px 28px 40px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:18px}
+    .logo{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:-.055em;font-size:21px}.logo-mark{width:29px;height:29px;background:var(--green);color:white;display:grid;place-items:center;border-radius:8px;font-size:14px;letter-spacing:0}.daily{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:650}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:62px;padding-top:42px}.eyebrow{font-size:11px;color:var(--green);letter-spacing:.16em;text-transform:uppercase;font-weight:750}.main h1{font-size:clamp(34px,5vw,54px);letter-spacing:-.07em;line-height:1;margin:13px 0 12px}.intro{color:#68716b;font-size:15px;line-height:1.55;margin:0 0 24px;max-width:500px}
+    .player-row{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}.player-row label{font-size:12px;font-weight:700}.player-row input{height:40px;border:1px solid #d6d8d0;border-radius:7px;padding:0 12px;background:white;font:inherit;width:180px;outline:none}.player-row input:focus{border-color:var(--green);box-shadow:0 0 0 3px #236c551c}.player-row small{color:var(--muted);font-size:11px}
+    .puzzle{display:grid;grid-template-columns:194px 1fr;gap:32px;align-items:center;border:1px solid var(--line);background:#fffefa;border-radius:12px;padding:22px;max-width:610px;box-shadow:0 8px 28px #263b2d08}.grid{display:grid;grid-template-columns:repeat(3,58px);grid-template-rows:repeat(3,58px);gap:5px}.square{width:58px;height:58px;position:relative}.cell{width:58px;height:58px;border:2px solid #c9cec8;border-radius:7px;text-align:center;text-transform:uppercase;font-size:26px;font-weight:750;color:var(--ink);outline:none;background:#fff;caret-color:var(--green);padding:0}.cell-number{position:absolute;left:6px;top:3px;z-index:2;font-size:9px;line-height:1;color:#737b75;pointer-events:none}.cell:focus{border-color:var(--green);box-shadow:0 0 0 3px #236c5523;z-index:1}.cell:disabled{opacity:1;background:#f9f9f5}.cell.correct{background:var(--green2);border-color:#8bb29f;color:#1b634a}.clues h2{font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin:0 0 10px}.clue-columns{display:grid;grid-template-columns:1fr 1fr;gap:14px}.clue{display:grid;grid-template-columns:18px 1fr;gap:5px;margin:8px 0;font-size:12px;line-height:1.35}.num{color:var(--green);font-weight:800}.hint{color:#858b86;font-size:11px;line-height:1.45;margin:12px 0 0}
+    .actions{display:flex;align-items:center;gap:14px;margin-top:18px;max-width:610px}.start{border:0;background:var(--green);color:white;border-radius:7px;padding:12px 20px;font:700 13px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 3px 0 #164d3b;transition:transform .12s,background .12s}.start:hover{background:#1b5e49;transform:translateY(-1px)}.timer{font-variant-numeric:tabular-nums;font-size:22px;font-weight:750;letter-spacing:-.04em;min-width:84px}.message{font-size:12px;color:var(--muted);line-height:1.4}.message.good{color:var(--green);font-weight:700}.message.error{color:#aa493d}
+    .side{border-left:1px solid var(--line);padding-left:28px}.side h2{font-size:18px;letter-spacing:-.035em;margin:0 0 5px}.side p{font-size:12px;color:var(--muted);margin:0 0 19px}.leader-head,.leader-row{display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:8px}.leader-head{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#9a9f98;padding:0 0 8px;border-bottom:1px solid var(--line)}.leader-row{padding:10px 0;border-bottom:1px solid #e8e8e2;font-size:12px}.rank{color:#9b9f99;font-size:11px}.name{font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.time{font-weight:750;font-variant-numeric:tabular-nums}.empty{color:#919791;font-size:12px;padding:18px 0}.db{display:flex;align-items:center;gap:7px;margin-top:22px;color:#7c837d;font-size:10px}.db i{width:7px;height:7px;border-radius:50%;background:#aaa}.db.ok i{background:#51a479}.db.bad i{background:#d66b5c}.rules{max-width:610px;border-top:1px solid var(--line);margin-top:28px;padding-top:16px;color:#858b86;font-size:11px;line-height:1.55}
+    @media(max-width:760px){.page{padding:20px 17px 30px}.layout{grid-template-columns:1fr;gap:34px;padding-top:30px}.side{border-left:0;border-top:1px solid var(--line);padding:25px 0 0}.puzzle{grid-template-columns:minmax(174px,194px) 1fr;gap:18px;padding:15px}.grid{grid-template-columns:repeat(3,min(17vw,58px));grid-template-rows:repeat(3,min(17vw,58px));gap:4px}.cell,.square{width:min(17vw,58px);height:min(17vw,58px)}.cell{font-size:23px}.daily{font-size:9px}.leaderboard{max-width:440px}}
+    @media(max-width:420px){.puzzle{grid-template-columns:1fr;justify-items:center}.clues{width:100%}.clues h2{text-align:center}.player-row input{width:155px}.actions{gap:10px}.message{font-size:11px}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="top"><div class="logo"><span class="logo-mark">C</span> cross sprint</div><div class="daily">A tiny timed crossword</div></header>
+    <div class="layout">
+      <section class="main" aria-labelledby="title">
+        <div class="eyebrow">Today’s quick puzzle</div>
+        <h1 id="title">Three words.<br>One little grid.</h1>
+        <p class="intro">Fill the 3 × 3 grid from the across and down clues. Every letter belongs to two crossing words. Start the clock when you’re ready.</p>
+        <div class="player-row"><label for="player">Your name</label><input id="player" maxlength="20" autocomplete="nickname" placeholder="e.g. Alex"><small>Used on the leaderboard</small></div>
+        <div class="puzzle">
+          <div class="grid" role="group" aria-label="Three by three word puzzle">
+            <div class="square"><span class="cell-number">1</span><input class="cell" data-row="0" data-col="0" maxlength="1" aria-label="1 across and down, first letter" disabled></div><div class="square"><span class="cell-number">2</span><input class="cell" data-row="0" data-col="1" maxlength="1" aria-label="2 down, second letter" disabled></div><div class="square"><span class="cell-number">3</span><input class="cell" data-row="0" data-col="2" maxlength="1" aria-label="3 down, third letter" disabled></div>
+            <div class="square"><span class="cell-number">4</span><input class="cell" data-row="1" data-col="0" maxlength="1" aria-label="4 across, first letter" disabled></div><div class="square"><span class="cell-number">5</span><input class="cell" data-row="1" data-col="1" maxlength="1" aria-label="5 across, second letter" disabled></div><div class="square"><span class="cell-number">6</span><input class="cell" data-row="1" data-col="2" maxlength="1" aria-label="6 across, third letter" disabled></div>
+            <div class="square"><span class="cell-number">7</span><input class="cell" data-row="2" data-col="0" maxlength="1" aria-label="7 across, first letter" disabled></div><div class="square"><span class="cell-number">8</span><input class="cell" data-row="2" data-col="1" maxlength="1" aria-label="8 across, second letter" disabled></div><div class="square"><span class="cell-number">9</span><input class="cell" data-row="2" data-col="2" maxlength="1" aria-label="9 across, third letter" disabled></div>
+          </div>
+          <div class="clues"><div class="clue-columns"><div><h2>Across</h2><div class="clue"><span class="num">1</span><span>Feline companion</span></div><div class="clue"><span class="num">4</span><span>Rock containing metal</span></div><div class="clue"><span class="num">7</span><span>Number after nine</span></div></div><div><h2>Down</h2><div class="clue"><span class="num">1</span><span>Small bed</span></div><div class="clue"><span class="num">2</span><span>Plural form of “be”</span></div><div class="clue"><span class="num">3</span><span>Number after nine</span></div></div></div><p class="hint">The crossing letters form six words. Type a letter, or use Tab / arrow keys to move.</p></div>
+        </div>
+        <div class="actions"><button class="start" id="start">Start game</button><div class="timer" id="timer" aria-live="off">00:00.0</div><div class="message" id="message" aria-live="polite">Enter your name, then start the timer.</div></div>
+        <div class="rules">Your best time is saved by name in the PostgreSQL leaderboard. Play again to improve it; only your fastest time is ranked.</div>
+      </section>
+      <aside class="side"><h2>Fastest solves</h2><p>Best times saved for everyone</p><div class="leaderboard" id="leaderboard"><div class="empty">Loading scores…</div></div><div class="db" id="db"><i></i><span id="dbText">Connecting to PostgreSQL…</span></div></aside>
+    </div>
+  </main>
+<script>
+(() => {
+  const cells=[...document.querySelectorAll('.cell')], player=document.querySelector('#player');
+  const startButton=document.querySelector('#start'), timer=document.querySelector('#timer'), message=document.querySelector('#message');
+  const db=document.querySelector('#db'), dbText=document.querySelector('#dbText'), leaderboard=document.querySelector('#leaderboard');
+  const solution=['CAT','ORE','TEN']; let active=false, completed=false, startedAt=0, clockId=null;
+  function elapsed(){return Math.max(0,performance.now()-startedAt)}
+  function format(ms){const total=Math.floor(ms/100);const min=Math.floor(total/600);const sec=Math.floor(total/10)%60;return `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}.${total%10}`}
+  function setDb(ok,text){db.classList.toggle('ok',ok);db.classList.toggle('bad',!ok);dbText.textContent=text}
+  function board(){return [0,1,2].map(r=>cells.slice(r*3,r*3+3).map(c=>c.value.toUpperCase()).join(''))}
+  function solved(){if(board().every((word,i)=>word===solution[i]))finish()}
+  function focusCell(index){cells[Math.max(0,Math.min(cells.length-1,index))].focus()}
+  cells.forEach((cell,index)=>{
+    cell.addEventListener('input',()=>{cell.value=cell.value.replace(/[^a-z]/gi,'').slice(-1).toUpperCase();if(cell.value&&index<8)focusCell(index+1);solved()});
+    cell.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!cell.value&&index>0){e.preventDefault();focusCell(index-1)}if(e.key==='ArrowRight'){e.preventDefault();focusCell(index+1)}if(e.key==='ArrowLeft'){e.preventDefault();focusCell(index-1)}if(e.key==='ArrowDown'){e.preventDefault();focusCell(index+3)}if(e.key==='ArrowUp'){e.preventDefault();focusCell(index-3)}});
+  });
+  function restart(){clearInterval(clockId);active=false;completed=false;cells.forEach(c=>{c.value='';c.disabled=true;c.classList.remove('correct')});player.disabled=false;timer.textContent='00:00.0';startButton.textContent='Start game';message.className='message';message.textContent='Enter your name, then start the timer.'}
+  function start(){const name=player.value.trim();if(!name){message.className='message error';message.textContent='Add your name before starting.';player.focus();return}if(completed)restart();player.disabled=true;active=true;startedAt=performance.now();cells.forEach(c=>c.disabled=false);startButton.textContent='Reset';message.className='message';message.textContent='Go! Solve the across and down clues.';clockId=setInterval(()=>{timer.textContent=format(elapsed())},100);focusCell(0)}
+  async function finish(){if(!active)return;active=false;completed=true;clearInterval(clockId);const timeMs=Math.max(1,Math.round(elapsed()));timer.textContent=format(timeMs);cells.forEach(c=>{c.disabled=true;c.classList.add('correct')});startButton.textContent='Play again';message.className='message';message.textContent='Solved! Saving your time…';try{const response=await fetch('/api/scores',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({player_name:player.value.trim(),time_ms:timeMs})});const data=await response.json();if(!response.ok)throw new Error(data.error||'Could not save score.');message.className='message good';message.textContent=data.new_best?`New personal best! ${format(timeMs)} saved.`:`Time saved. Your best is ${format(data.best_time_ms)}.`;setDb(true,'Scores saved in PostgreSQL');loadLeaderboard()}catch(e){message.className='message error';message.textContent='Solved, but score could not be saved. '+e.message;setDb(false,'PostgreSQL unavailable')}}
+  startButton.addEventListener('click',()=>{if(active){restart();return}start()});
+  async function loadLeaderboard(){try{const response=await fetch('/api/leaderboard');const data=await response.json();if(!response.ok)throw new Error(data.error||'Database unavailable');setDb(true,'Scores saved in PostgreSQL');if(!data.scores.length){leaderboard.innerHTML='<div class="empty">No times yet. Be the first!</div>';return}leaderboard.innerHTML='<div class="leader-head"><span>#</span><span>Player</span><span>Best</span></div>'+data.scores.map((score,i)=>`<div class="leader-row"><span class="rank">${String(i+1).padStart(2,'0')}</span><span class="name"></span><span class="time">${format(score.best_time_ms)}</span></div>`).join('');leaderboard.querySelectorAll('.name').forEach((node,i)=>{node.textContent=data.scores[i].player_name})}catch(e){leaderboard.innerHTML='<div class="empty">Leaderboard unavailable right now.</div>';setDb(false,'PostgreSQL unavailable')}}
+  loadLeaderboard();
+})();
+</script>
+</body>
+</html>

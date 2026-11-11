@@ -1,16 +1,26 @@
-# testapp09
+# Cross Sprint
 
-Python / Flask / PostgreSQL starter. Creation does not deploy this application.
+A small timed crossword. Enter a name, press **Start game**, and fill the 3 × 3
+grid from the across and down clues. The app saves each player's fastest time
+in PostgreSQL and shows the top ten.
 
-Run `pip install -r requirements.txt`, configure `DB_HOST`, `DB_PORT` (default 5432),
-`DB_NAME`, `DB_USER`, `DB_PASSWORD`, then run `python app.py`.
-Open http://localhost:8080; `/` records a visit and `/healthz` checks the web process.
-Never commit database credentials.
+## Run locally
 
-For deployment, choose a PostgreSQL option in the existing portal form: GCP Cloud
-SQL or Azure PostgreSQL. PostgreSQL supports concurrent writers using a separate
-database server. GCP production failover is configured during deployment, not
-during repository creation. Creating this repository does not provision a database.
+```sh
+pip install -r requirements.txt
+export DB_HOST=localhost DB_PORT=5432 DB_NAME=cross_sprint
+export DB_USER=postgres DB_PASSWORD=your-password
+python app.py
+```
 
-This starter contains no CI workflow or cloud resources. Review and develop it
-before opening the portal's separate deployment form.
+Open http://localhost:8080. The app creates the `puzzle_scores` table on first
+use. Reusing a player name updates their personal best and game count.
+
+## Run in the cloud
+
+Build and deploy the included Dockerfile. Set `DB_HOST`, `DB_PORT`, `DB_NAME`,
+`DB_USER`, and `DB_PASSWORD` as service environment variables. Use the cloud
+PostgreSQL service's HA endpoint for `DB_HOST` if you want scores to remain
+available through a database failover.
+
+`/healthz` checks the web process and `/readyz` checks database connectivity.
