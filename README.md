@@ -30,4 +30,7 @@ that setting in a deployed environment. `.env` is excluded from Git and Docker.
 
 The template uses PostgreSQL. Configure `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`,
 and `DB_PASSWORD` as deployment environment variables. `PORT` defaults to 8080.
-`/healthz` checks the web process; `/api/check` tests PostgreSQL connectivity.
+`/healthz` checks the web process; `/health` returns 200 only when PostgreSQL is
+reachable and writable. The private-cloud readiness probe calls `/health`.
+`/api/check` tests PostgreSQL connectivity from the board. The container runs as
+UID/GID 10001, as required by the private-cloud deployment.
