@@ -5,4 +5,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 ENV PORT=8080
 EXPOSE 8080
+USER 10001:10001
 CMD ["python", "app.py"]

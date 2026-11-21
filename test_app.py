@@ -62,3 +62,28 @@ def test_database_check_identifies_starter_password(monkeypatch):
 
 def test_health_does_not_require_database():
     assert app.test_client().get('/healthz').json == {'status': 'ok'}
+
+
+def test_readiness_requires_writable_database(monkeypatch):
+    for key in ('DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'):
+        monkeypatch.setenv(key, 'configured')
+    connection = MagicMock()
+    with patch('app.psycopg.connect') as connect:
+        connect.return_value.__enter__.return_value = connection
+        connection.execute.return_value.fetchone.return_value = ('off',)
+        assert app.test_client().get('/health').status_code == 200
+        connection.execute.return_value.fetchone.return_value = ('on',)
+        assert app.test_client().get('/health').status_code == 503
+    connection.execute.assert_called_with('SHOW transaction_read_only')
+
+
+def test_readiness_reports_missing_database_configuration(monkeypatch):
+    monkeypatch.delenv('DB_HOST', raising=False)
+    assert app.test_client().get('/health').status_code == 503
+
+
+def test_readiness_reports_database_connection_failure(monkeypatch):
+    for key in ('DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'):
+        monkeypatch.setenv(key, 'configured')
+    with patch('app.psycopg.connect', side_effect=ValueError('invalid port')):
+        assert app.test_client().get('/health').status_code == 503
