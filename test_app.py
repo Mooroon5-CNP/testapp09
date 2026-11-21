@@ -6,11 +6,14 @@ from app import app
 def test_board_shows_values_and_masks_password(monkeypatch):
     monkeypatch.setenv('DB_HOST', 'database.example')
     monkeypatch.setenv('DB_PASSWORD', 'private-password')
+    monkeypatch.setenv('VARIABLE_ENV_VISIBLE', 'Visible test value')
     response = app.test_client().get('/')
     page = response.get_data(as_text=True)
     assert response.status_code == 200
     assert 'database.example' in page
     assert 'DB_PASSWORD' in page
+    assert 'VARIABLE_ENV_VISIBLE' in page
+    assert 'Visible test value' in page
     assert 'private-password' not in page
 
 

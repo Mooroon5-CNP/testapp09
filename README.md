@@ -1,14 +1,16 @@
 # Config Bingo
 
 A small Flask app for checking the PostgreSQL settings the app actually uses. The
-board shows `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, and `PORT`.
+board shows `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `PORT`,
+and `VARIABLE_ENV_VISIBLE`.
 Fill the board and click **Test PostgreSQL** to check a live connection. The app
 does not create tables or change data.
 
 ## Run locally
 
-The repository includes an ignored `.env` file with local starter values. Edit its
-`DB_*` values for your PostgreSQL server, then run:
+The repository includes an ignored `.env` file. Set its `DB_*` values for your
+PostgreSQL server and use `VARIABLE_ENV_VISIBLE` for any text you want to see on
+the board, then run:
 
 ```sh
 python3 -m venv .venv

@@ -11,7 +11,10 @@ load_dotenv(override=False)
 
 app = Flask(__name__)
 
-VARIABLES = ('DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'PORT')
+VARIABLES = (
+    'DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'PORT',
+    'VARIABLE_ENV_VISIBLE',
+)
 
 
 def config_cards():
