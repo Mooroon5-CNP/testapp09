@@ -21,7 +21,9 @@ def test_password_reveal_is_local_only(monkeypatch):
     monkeypatch.setenv('ALLOW_SECRET_REVEAL', '1')
     monkeypatch.setenv('DB_PASSWORD', 'private-password')
     client = app.test_client()
-    assert client.get('/api/password', environ_overrides={'REMOTE_ADDR': '203.0.113.2'}).status_code == 403
+    remote_response = client.get('/api/password',
+                                 environ_overrides={'REMOTE_ADDR': '203.0.113.2'})
+    assert remote_response.status_code == 403
     assert client.get('/api/password').json == {'value': 'private-password'}
 
 

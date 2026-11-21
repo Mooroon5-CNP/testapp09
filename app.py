@@ -79,7 +79,10 @@ def check_database():
     except (psycopg.Error, ValueError) as exc:
         # Database errors can contain credentials or connection strings.
         app.logger.info('PostgreSQL check failed: %s', type(exc).__name__)
-        return jsonify(ok=False, message='Could not connect to PostgreSQL. Check the values and server.')
+        return jsonify(
+            ok=False,
+            message='Could not connect to PostgreSQL. Check the values and server.',
+        )
 
     return jsonify(ok=True, message='PostgreSQL connection successful!')
 
