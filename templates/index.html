@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Config Bingo · PostgreSQL</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; color: #f6f4ff; background: radial-gradient(circle at 85% 10%, #493479 0, transparent 35%), radial-gradient(circle at 10% 85%, #24545c 0, transparent 38%), #121223; }
+    main { width: min(1040px, calc(100% - 32px)); margin: 0 auto; padding: 58px 0 75px; }
+    .eyebrow { color: #abf1cf; font-size: 13px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+    h1 { font-size: clamp(42px, 8vw, 76px); letter-spacing: -.06em; line-height: 1; margin: 14px 0; }
+    .intro { max-width: 650px; color: #c5c4d7; font-size: 18px; line-height: 1.55; }
+    .panel { margin-top: 38px; padding: 26px; border: 1px solid #625b82; border-radius: 24px; background: #1e1d35d9; box-shadow: 0 28px 80px #07071470; }
+    .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 22px; }
+    h2 { margin: 0; font-size: 21px; }
+    .counter { background: #343052; color: #d8cffb; padding: 9px 14px; border-radius: 99px; font-weight: 800; white-space: nowrap; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .card { min-height: 170px; padding: 20px; border: 1px solid #625b82; border-radius: 17px; background: #282640; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+    .card.set { border-color: #5ba98b; background: linear-gradient(145deg, #24473f, #292940 85%); }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .name { font-size: 13px; letter-spacing: .08em; font-weight: 900; color: #d5d0e7; overflow-wrap: anywhere; }
+    .stamp { color: #ffffff; background: #6d4860; border-radius: 99px; font-size: 11px; padding: 5px 8px; font-weight: 900; white-space: nowrap; }
+    .set .stamp { background: #297b61; }
+    .value { font-size: clamp(17px, 2.2vw, 23px); font-weight: 750; overflow-wrap: anywhere; }
+    .empty { color: #aaa6bc; font-style: italic; }
+    .reveal { align-self: flex-start; padding: 4px 0; color: #adf2d0; border: 0; background: transparent; cursor: pointer; font: inherit; font-size: 13px; text-decoration: underline; }
+    .controls { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; margin-top: 24px; }
+    .check { border: 0; border-radius: 12px; padding: 14px 20px; background: #b5f3ce; color: #142920; font: inherit; font-weight: 900; cursor: pointer; }
+    .check:hover { background: #d0ffe2; }
+    .check:disabled { opacity: .65; cursor: wait; }
+    .result { color: #d4d0e4; line-height: 1.5; }
+    .result.good { color: #a9f0c5; }
+    .result.bad { color: #ffbfbd; }
+    .bingo { display: none; margin-top: 22px; padding: 14px 18px; text-align: center; background: #adf2d0; color: #163628; border-radius: 13px; font-size: 24px; font-weight: 1000; letter-spacing: .18em; }
+    .bingo.visible { display: block; }
+    .note { margin-top: 20px; color: #aaa7bd; font-size: 14px; line-height: 1.5; }
+    code { color: #c7f7df; }
+    @media (max-width: 720px) { main { padding-top: 38px; } .panel { padding: 18px; } .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 440px) { .grid { grid-template-columns: 1fr; } .card { min-height: 130px; } }
+  </style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">The tiny PostgreSQL setup game</div>
+  <h1>Config Bingo ✨</h1>
+  <p class="intro">See the values your app is using. Fill every square, then test the database connection to call BINGO.</p>
+
+  <section class="panel" aria-labelledby="board-title">
+    <div class="panel-head">
+      <h2 id="board-title">Your configuration board</h2>
+      <div class="counter">{{ cards | selectattr('set') | list | length }} / {{ cards | length }} set</div>
+    </div>
+    <div class="grid">
+      {% for card in cards %}
+      <article class="card{% if card.set %} set{% endif %}">
+        <div class="card-top"><span class="name">{{ card.name }}</span><span class="stamp">{{ 'SET' if card.set else 'MISSING' }}</span></div>
+        <div>
+          <div class="value{% if not card.set %} empty{% endif %}"{% if card.secret %} id="password-value"{% endif %}>{{ card.value if card.set else 'No value yet' }}</div>
+          {% if card.secret and card.set and reveal_allowed %}<button class="reveal" id="reveal" type="button">Reveal locally</button>{% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    <div class="controls">
+      <button class="check" id="check" type="button">Test PostgreSQL ↗</button>
+      <span class="result" id="result" role="status" aria-live="polite">Ready when you are.</span>
+    </div>
+    <div class="bingo" id="bingo" role="status">BINGO! 🎉</div>
+    <p class="note">Values come from the app's environment, including <code>.env</code> for local runs. Change <code>.env</code> and restart the app to refresh this board. The password stays hidden on deployed pages.</p>
+  </section>
+</main>
+<script>
+  const checkButton = document.getElementById('check');
+  const result = document.getElementById('result');
+  const bingo = document.getElementById('bingo');
+  const allSet = {{ all_set | tojson }};
+
+  checkButton.addEventListener('click', async () => {
+    checkButton.disabled = true;
+    result.className = 'result';
+    result.textContent = 'Checking PostgreSQL…';
+    bingo.classList.remove('visible');
+    try {
+      const response = await fetch('/api/check', { cache: 'no-store' });
+      const data = await response.json();
+      result.textContent = data.message;
+      result.classList.add(data.ok ? 'good' : 'bad');
+      if (data.ok && allSet) bingo.classList.add('visible');
+    } catch {
+      result.textContent = 'The check could not run. Try again.';
+      result.classList.add('bad');
+    } finally {
+      checkButton.disabled = false;
+    }
+  });
+
+  const revealButton = document.getElementById('reveal');
+  if (revealButton) {
+    revealButton.addEventListener('click', async () => {
+      const value = document.getElementById('password-value');
+      if (revealButton.textContent === 'Hide password') {
+        value.textContent = '••••••••';
+        revealButton.textContent = 'Reveal locally';
+        return;
+      }
+      try {
+        const response = await fetch('/api/password', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Reveal denied');
+        value.textContent = (await response.json()).value;
+        revealButton.textContent = 'Hide password';
+      } catch {
+        value.textContent = 'Reveal unavailable';
+      }
+    });
+  }
+</script>
+</body>
+</html>

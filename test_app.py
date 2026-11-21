@@ -1,22 +1,59 @@
 from unittest.mock import MagicMock, patch
+
 from app import app
+
+
+def test_board_shows_values_and_masks_password(monkeypatch):
+    monkeypatch.setenv('DB_HOST', 'database.example')
+    monkeypatch.setenv('DB_PASSWORD', 'private-password')
+    response = app.test_client().get('/')
+    page = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'database.example' in page
+    assert 'DB_PASSWORD' in page
+    assert 'private-password' not in page
+
+
+def test_password_reveal_is_local_only(monkeypatch):
+    monkeypatch.setenv('ALLOW_SECRET_REVEAL', '1')
+    monkeypatch.setenv('DB_PASSWORD', 'private-password')
+    client = app.test_client()
+    assert client.get('/api/password', environ_overrides={'REMOTE_ADDR': '203.0.113.2'}).status_code == 403
+    assert client.get('/api/password').json == {'value': 'private-password'}
+
+
+def test_database_check_uses_environment(monkeypatch):
+    values = {'DB_HOST': 'database', 'DB_PORT': '5433', 'DB_NAME': 'demo',
+              'DB_USER': 'user', 'DB_PASSWORD': 'secret'}
+    for key, value in values.items():
+        monkeypatch.setenv(key, value)
+    connection = MagicMock()
+    with patch('app.psycopg.connect') as connect:
+        connect.return_value.__enter__.return_value = connection
+        response = app.test_client().get('/api/check')
+    assert response.json['ok'] is True
+    connect.assert_called_once_with(host='database', port='5433', dbname='demo',
+                                    user='user', password='secret', connect_timeout=3)
+    connection.execute.assert_called_once_with('SELECT 1')
+
+
+def test_database_check_reports_missing_settings(monkeypatch):
+    monkeypatch.delenv('DB_HOST', raising=False)
+    response = app.test_client().get('/api/check')
+    assert response.json['ok'] is False
+    assert 'DB_HOST' in response.json['message']
+
+
+def test_database_check_identifies_starter_password(monkeypatch):
+    for key in ('DB_HOST', 'DB_NAME', 'DB_USER'):
+        monkeypatch.setenv(key, 'configured')
+    monkeypatch.setenv('DB_PASSWORD', 'change-me')
+    with patch('app.psycopg.connect') as connect:
+        response = app.test_client().get('/api/check')
+    assert response.json['ok'] is False
+    assert 'starter password' in response.json['message']
+    connect.assert_not_called()
 
 
 def test_health_does_not_require_database():
     assert app.test_client().get('/healthz').json == {'status': 'ok'}
-
-
-def test_database_uses_platform_configuration(monkeypatch):
-    for key, value in {'DB_HOST': 'database', 'DB_NAME': 'demo',
-                       'DB_USER': 'user', 'DB_PASSWORD': 'secret'}.items():
-        monkeypatch.setenv(key, value)
-    connection = MagicMock()
-    connection.execute.return_value.fetchone.return_value = (2,)
-    with patch('app.psycopg.connect') as connect:
-        connect.return_value.__enter__.return_value = connection
-        response = app.test_client().get('/')
-        assert response.json['visits'] == 2
-        connect.assert_called_once_with(
-            host='database', port='5432', dbname='demo',
-            user='user', password='secret', connect_timeout=10,
-        )

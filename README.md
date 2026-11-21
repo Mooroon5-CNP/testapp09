@@ -1,16 +1,31 @@
-# testapp09
+# Config Bingo
 
-Python / Flask / PostgreSQL starter. Creation does not deploy this application.
+A small Flask app for checking the PostgreSQL settings the app actually uses. The
+board shows `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, and `PORT`.
+Fill the board and click **Test PostgreSQL** to check a live connection. The app
+does not create tables or change data.
 
-Run `pip install -r requirements.txt`, configure `DB_HOST`, `DB_PORT` (default 5432),
-`DB_NAME`, `DB_USER`, `DB_PASSWORD`, then run `python app.py`.
-Open http://localhost:8080; `/` records a visit and `/healthz` checks the web process.
-Never commit database credentials.
+## Run locally
 
-For deployment, choose a PostgreSQL option in the existing portal form: GCP Cloud
-SQL or Azure PostgreSQL. PostgreSQL supports concurrent writers using a separate
-database server. GCP production failover is configured during deployment, not
-during repository creation. Creating this repository does not provision a database.
+The repository includes an ignored `.env` file with local starter values. Edit its
+`DB_*` values for your PostgreSQL server, then run:
 
-This starter contains no CI workflow or cloud resources. Review and develop it
-before opening the portal's separate deployment form.
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+Open http://localhost:8080. Restart the app after editing `.env`. Existing process
+environment variables take priority over `.env` values.
+
+The password is masked on the board. A reveal button is available only when
+`ALLOW_SECRET_REVEAL=1` and the request comes from the local machine. Never enable
+that setting in a deployed environment. `.env` is excluded from Git and Docker.
+
+## Deploy
+
+The template uses PostgreSQL. Configure `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`,
+and `DB_PASSWORD` as deployment environment variables. `PORT` defaults to 8080.
+`/healthz` checks the web process; `/api/check` tests PostgreSQL connectivity.
