@@ -13,11 +13,12 @@ concurrency:
   cancel-in-progress: false
 jobs:
   pipeline:
-    uses: Mooroon5-CNP/ci-templates/.github/workflows/pipeline-azure.yml@main
+    uses: Mooroon5-CNP/ci-templates/.github/workflows/pipeline.yml@main
     with:
       app_name: testapp09
-      app_port: '8080'
+      target_cloud: gcp
       config_repo_url: https://github.com/Mooroon5-CNP/config-repo
       gitops_mode: portal
+      app_port: '8080'
     secrets:
       CONFIG_REPO_TOKEN: ${{ secrets.CONFIG_REPO_TOKEN }}
